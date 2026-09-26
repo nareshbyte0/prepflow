@@ -1,0 +1,59 @@
+import bcrypt from 'bcryptjs';
+import cors from 'cors';
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import User from './models/User.js';
+import Progress from './models/Progress.js';
+import { requireAuth } from './middleware/auth.js';
+import { getJwtSecret } from './db.js';
+
+const require = createRequire(import.meta.url);
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const questions = require('../questions.json');
+const app = express();
+
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || true }));
+app.use(express.json({ limit: '1mb' }));
+
+const token = user => jwt.sign({ sub: user.id, ver: user.tokenVersion }, getJwtSecret(), { expiresIn: '7d' });
+const profile = user => ({ id: user.id, name: user.name, email: user.email });
+
+app.get('/api/questions', (_req, res) => res.json(questions));
+app.post('/api/auth/signup', async (req, res, next) => { try {
+  const { name = '', email = '', password = '' } = req.body;
+  if (!name.trim() || !email.trim() || password.length < 8) return res.status(400).json({ message: 'Name, email, and an 8-character password are required.' });
+  if (await User.exists({ email: email.trim().toLowerCase() })) return res.status(409).json({ message: 'An account already exists for this email.' });
+  const user = await User.create({ name, email, passwordHash: await bcrypt.hash(password, 12) });
+  res.status(201).json({ token: token(user), user: profile(user) });
+} catch (error) { next(error); } });
+app.post('/api/auth/login', async (req, res, next) => { try {
+  const user = await User.findOne({ email: String(req.body.email || '').trim().toLowerCase() });
+  if (!user || !(await bcrypt.compare(req.body.password || '', user.passwordHash))) return res.status(401).json({ message: 'Email or password is incorrect.' });
+  res.json({ token: token(user), user: profile(user) });
+} catch (error) { next(error); } });
+app.get('/api/auth/me', requireAuth, (req, res) => res.json({ user: profile(req.user) }));
+app.post('/api/auth/logout', requireAuth, async (req, res, next) => { try { req.user.tokenVersion++; await req.user.save(); res.status(204).end(); } catch (error) { next(error); } });
+app.get('/api/progress', requireAuth, async (req, res, next) => { try {
+  const progress = await Progress.findOne({ user: req.user.id });
+  res.json({ solved: progress?.solved || [], notes: Object.fromEntries(progress?.notes || []) });
+} catch (error) { next(error); } });
+app.put('/api/progress', requireAuth, async (req, res, next) => { try {
+  const solved = [...new Set((req.body.solved || []).filter(Number.isInteger))];
+  const notes = Object.fromEntries(Object.entries(req.body.notes || {}).filter(([key, value]) => Number.isInteger(Number(key)) && typeof value === 'string' && value.length <= 5000));
+  const progress = await Progress.findOneAndUpdate({ user: req.user.id }, { solved, notes }, { new: true, upsert: true, setDefaultsOnInsert: true });
+  res.json({ solved: progress.solved, notes: Object.fromEntries(progress.notes) });
+} catch (error) { next(error); } });
+
+const clientDist = join(root, 'client', 'dist');
+if (!process.env.VERCEL && existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (_req, res) => res.sendFile(join(clientDist, 'index.html')));
+}
+
+app.use((error, _req, res, _next) => { console.error(error); res.status(500).json({ message: 'Something went wrong.' }); });
+
+export default app;

@@ -2,7 +2,7 @@
   "name": "prepflow-api",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "nodemon index.js", "start": "node index.js" },
+  "scripts": { "dev": "nodemon index.js", "start": "node index.js", "test": "node --test" },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

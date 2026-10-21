@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { downloadQuestionChecklistPdf } from './questionPdf.js';
 import './styles.css';
 import './visual-refresh.css';
 
@@ -116,6 +117,7 @@ function Tracker({ user, onLogout }) {
   const [leetcodeInput, setLeetcodeInput] = useState('');
   const [leetcodeBusy, setLeetcodeBusy] = useState(false);
   const [leetcodeError, setLeetcodeError] = useState('');
+  const [pdfError, setPdfError] = useState('');
   const progressRef = useRef({ solved: [], notes: {}, reviewDue: {} });
   const saveQueue = useRef(Promise.resolve());
   const pendingSaves = useRef(0);
@@ -203,6 +205,15 @@ function Tracker({ user, onLogout }) {
       const link = document.createElement('a'); link.href = url; link.download = 'prepflow-export.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       setSettingsError('');
     } catch (error) { setSettingsError(error.message); }
+  };
+
+  const exportQuestionChecklist = () => {
+    try {
+      downloadQuestionChecklistPdf(questions, solved);
+      setPdfError('');
+    } catch (error) {
+      setPdfError(error.message || 'The question checklist could not be created. Please try again.');
+    }
   };
 
   const deleteAccount = async () => {
@@ -463,8 +474,9 @@ function Tracker({ user, onLogout }) {
       {loaded && <section className="practice" id="practice">
         <div className="practice-heading">
           <div><p>PROBLEM LIBRARY</p><h2>Practice queue</h2></div>
-          <div className="practice-actions"><button className={reviewOnly ? 'active' : ''} onClick={() => setReviewOnly(value => !value)}>Review queue ({Object.keys(reviewDue).length})</button><span>{filtered.length} results</span></div>
+          <div className="practice-actions"><span className="question-progress">{completed}/{total} solved</span><button type="button" className="download-checklist" onClick={exportQuestionChecklist} disabled={!questions.length} title="Download all questions as a printable checklist PDF">Download PDF</button><button className={reviewOnly ? 'active' : ''} onClick={() => setReviewOnly(value => !value)}>Review queue ({Object.keys(reviewDue).length})</button><span>{filtered.length} results</span></div>
         </div>
+        {pdfError && <div className="pdf-export-error" role="alert">{pdfError}</div>}
         <div className="toolbar">
           <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search a problem…" />
           <select value={topic} onChange={event => setTopic(event.target.value)}>

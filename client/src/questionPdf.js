@@ -23,7 +23,7 @@ function createPageContent(entries, solved, questionCount, topicSummary, pageNum
   };
   text('PREPFLOW', LEFT, y, 9, '0.16 0.34 0.58', 'F2');
   text('DSA QUESTION CHECKLIST', LEFT, y + 24, 20, '0.10 0.16 0.25', 'F2');
-  text('Your complete topic-by-topic practice plan', LEFT, y + 41, 9, '0.40 0.47 0.56');
+  text('Numbered questions  |  Tick boxes  |  Topic completion totals', LEFT, y + 41, 9, '0.40 0.47 0.56');
   y += 59;
 
   rect(LEFT, y, RIGHT - LEFT, 55, '0.95 0.97 0.99', '0.88 0.91 0.94');
@@ -59,16 +59,17 @@ function createPageContent(entries, solved, questionCount, topicSummary, pageNum
     for (const { question, index } of items) {
       if (!ensureRoom(23)) return { overflow: true };
       const checked = solved.has(index);
-      rect(LEFT + 10, y + 5, 11, 11, checked ? '0.18 0.44 0.78' : null, checked ? '0.18 0.44 0.78' : '0.68 0.73 0.80');
+      text(`${index + 1}.`, LEFT + 9, y + 14, 8, '0.50 0.56 0.64');
+      rect(LEFT + 31, y + 5, 11, 11, checked ? '0.18 0.44 0.78' : null, checked ? '0.18 0.44 0.78' : '0.68 0.73 0.80');
       if (checked) {
-        commands.push(`1 1 1 RG 1.3 w ${LEFT + 12} ${PAGE_HEIGHT - y - 1} m ${LEFT + 15} ${PAGE_HEIGHT - y - 4} l ${LEFT + 20} ${PAGE_HEIGHT - y + 2} l S`);
+        commands.push(`1 1 1 RG 1.3 w ${LEFT + 33} ${PAGE_HEIGHT - y - 1} m ${LEFT + 36} ${PAGE_HEIGHT - y - 4} l ${LEFT + 41} ${PAGE_HEIGHT - y + 2} l S`);
       }
       const title = question.name || 'Untitled question';
       const maxChars = 65;
-      text(title.length > maxChars ? `${title.slice(0, maxChars - 1)}...` : title, LEFT + 30, y + 14, 8.5, checked ? '0.43 0.49 0.57' : '0.17 0.24 0.34');
+      text(title.length > maxChars ? `${title.slice(0, maxChars - 1)}...` : title, LEFT + 50, y + 14, 8.5, checked ? '0.43 0.49 0.57' : '0.17 0.24 0.34');
       const difficulty = question.diff || '';
       text(difficulty, RIGHT - difficulty.length * 5.1 - 12, y + 14, 8, difficulty === 'Easy' ? '0.18 0.49 0.30' : difficulty === 'Hard' ? '0.70 0.28 0.25' : '0.61 0.43 0.12');
-      line(LEFT + 30, y + 22, RIGHT, y + 22);
+      line(LEFT + 50, y + 22, RIGHT, y + 22);
       y += 23;
     }
     y += 7;

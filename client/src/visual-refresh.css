@@ -16,3 +16,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 @media(min-width:901px){.hero h1{font-size:clamp(40px,3.8vw,50px)}}
 @media(min-width:781px) and (max-width:900px){.hero h1{font-size:38px}}
 @media(max-width:780px){.auth{grid-template-columns:1fr;overflow:auto}.hero{padding:32px 28px 26px}.hero-kicker{margin-top:22px}.hero h1{font-size:clamp(34px,6vw,46px);margin:13px 0 10px}.authPanel{padding:22px}}
+.metrics{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+.metric{align-self:start;width:100%}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.leetcode-metric{grid-column:1/-1}}

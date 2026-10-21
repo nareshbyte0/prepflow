@@ -26,3 +26,11 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
 .practice-actions .download-checklist:disabled{cursor:not-allowed;opacity:.55}
 .pdf-export-error{margin:0 0 12px;padding:10px 12px;border:1px solid #f0cbc8;border-radius:8px;background:#fff5f4;color:#a3443d;font-size:13px}
 @media(max-width:620px){.practice-heading{align-items:flex-start;gap:12px;flex-direction:column}.practice-actions{width:100%;flex-wrap:wrap}.practice-actions .question-progress{margin-right:auto}}
+.header-quick-actions{display:flex;align-items:center;gap:8px;margin-right:14px}
+.header-shortcut{padding:8px 10px;border:1px solid #dce4ee;border-radius:8px;color:#4e617b;font-size:12px;font-weight:700;text-decoration:none}
+.header-shortcut:hover{background:#f4f7fb}
+.header-download{padding:9px 12px;border:1px solid #245a9e;border-radius:8px;background:#285fa9;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.header-download:hover:not(:disabled){background:#1f4f8c}
+.header-download:disabled{cursor:not-allowed;opacity:.55}
+#leetcode-profile{scroll-margin-top:82px}
+@media(max-width:620px){.header-quick-actions{gap:5px;margin-right:8px}.header-shortcut{padding:8px;font-size:0}.header-shortcut::after{content:'LC';font-size:11px}.header-download{padding:8px 10px;font-size:0}.header-download::after{content:'PDF';font-size:11px}.profile{gap:5px}.profile button{padding:5px 4px}}

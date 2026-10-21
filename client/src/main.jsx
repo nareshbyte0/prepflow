@@ -323,6 +323,10 @@ function Tracker({ user, onLogout }) {
       <header>
         <Brand/>
         <div className={`sync ${saveError ? 'sync-error' : ''}`} aria-live="polite">{saving ? 'Saving changes…' : saveError ? 'Save needs attention' : 'Progress saved'}</div>
+        <div className="header-quick-actions">
+          <a className="header-shortcut" href="#leetcode-profile">LeetCode</a>
+          <button type="button" className="header-download" onClick={exportQuestionChecklist} disabled={!questions.length} title="Download all questions as a checklist PDF">Download PDF</button>
+        </div>
         <div className="profile">
           <i>{user.name[0].toUpperCase()}</i>
           {user.name}
@@ -372,7 +376,7 @@ function Tracker({ user, onLogout }) {
           <strong>{Object.values(notes).filter(Boolean).length}</strong>
           <small>Patterns captured for review</small>
         </div>
-        <div className="metric leetcode-metric">
+        <div className="metric leetcode-metric" id="leetcode-profile">
           <div className="icon">🔥</div>
           <span>LeetCode profile</span>
           {leetcode?.username ? <>

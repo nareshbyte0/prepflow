@@ -47,6 +47,9 @@ export function isTrustedOrigin(origin) {
   if (!origin) return true;
   const configured = (process.env.CLIENT_ORIGIN || '').split(',').map(value => value.trim()).filter(Boolean);
   if (process.env.APP_URL) configured.push(process.env.APP_URL.replace(/\/$/, ''));
+  for (const domain of [process.env.VERCEL_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL]) {
+    if (domain) configured.push(`https://${domain.replace(/^https?:\/\//, '').replace(/\/$/, '')}`);
+  }
   if (configured.length) return configured.includes(origin);
   if (process.env.NODE_ENV === 'production') return false;
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
@@ -71,7 +74,8 @@ export async function sendAccountEmail({ to, subject, text, html }) {
 
 export function validateProductionConfig() {
   if (process.env.NODE_ENV !== 'production') return;
-  const required = ['MONGODB_URI', 'JWT_SECRET', 'APP_URL', 'CLIENT_ORIGIN', 'RESEND_API_KEY', 'EMAIL_FROM'];
+  // Email delivery is only needed for verification/reset flows; it must not prevent existing users from logging in.
+  const required = ['MONGODB_URI', 'JWT_SECRET'];
   const missing = required.filter(key => !process.env[key]);
   if (missing.length) throw new Error(`Missing production configuration: ${missing.join(', ')}`);
   if (process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be at least 32 characters in production.');
@@ -87,7 +91,8 @@ export function reportApplicationError(event) {
 }
 
 export function getAppUrl() {
-  const appUrl = process.env.APP_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+  const vercelDomain = process.env.VERCEL_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const appUrl = process.env.APP_URL || (vercelDomain ? `https://${vercelDomain.replace(/^https?:\/\//, '')}` : process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
   if (!appUrl) throw new Error('APP_URL is required in production.');
   return appUrl.replace(/\/$/, '');
 }

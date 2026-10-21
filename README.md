@@ -21,16 +21,16 @@ If your local DNS resolver refuses the `mongodb+srv` record, add `DNS_SERVERS=1.
 
 ## Production setup
 
-Set these environment variables in the deployment platform (do not commit `.env`):
+Set these environment variables in Vercel Project Settings → Environment Variables for each deployment environment you use (do not commit `.env`):
 
 - `MONGODB_URI`: production MongoDB connection string.
 - `JWT_SECRET`: a random secret of at least 32 characters.
-- `APP_URL`: canonical HTTPS URL, without a trailing slash.
-- `CLIENT_ORIGIN`: allowed browser origin(s), comma-separated, without trailing slashes.
-- `RESEND_API_KEY` and `EMAIL_FROM`: Resend key and a sender on a verified domain. Signup verification and password reset use these.
+- `APP_URL`: canonical HTTPS URL, without a trailing slash. Vercel's `VERCEL_URL` is used as a fallback.
+- `CLIENT_ORIGIN`: allowed browser origin(s), comma-separated, without trailing slashes. Vercel's deployment and production domains are also trusted automatically.
+- `RESEND_API_KEY` and `EMAIL_FROM`: Resend key and a sender on a verified domain. These are required for signup verification and password reset, but missing email configuration does not prevent existing users from logging in.
 - `ERROR_WEBHOOK_URL` and optionally `ERROR_WEBHOOK_TOKEN`: HTTPS endpoint for structured error events.
 
-Production startup refuses to run without the required database, session, app URL, CORS, and email settings. In local development, verification and reset URLs are printed in the API log. Existing accounts stay verified; new accounts must verify their email. Sessions use an HttpOnly, SameSite cookie. Old local-storage sessions are migrated to the cookie on their next successful login restore.
+Production startup requires the database connection and session secret. Configure the email settings before allowing new signups. In local development, verification and reset URLs are printed in the API log. Existing accounts stay verified; new accounts must verify their email. Sessions use an HttpOnly, SameSite cookie. Old local-storage sessions are migrated to the cookie on their next successful login restore.
 
 The API exposes `/api/health/live` for process liveness and `/api/health/ready` for database readiness. Configure the hosting platform to use readiness before routing traffic. The built-in rate limits are per process; deployments with multiple instances should enforce shared limits at the edge or configure a shared rate-limit store. Configure MongoDB automated backups/PITR with your provider and perform a restore drill before launch. Set an error webhook or connect your monitoring provider, and alert on failed readiness checks and elevated 5xx rates.
 
